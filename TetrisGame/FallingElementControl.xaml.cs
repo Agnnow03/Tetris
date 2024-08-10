@@ -72,14 +72,11 @@ namespace TetrisGame
             SpawnContainer.Children.Add(squares[0]);
             Canvas.SetTop(squares[0], points[0].Y);
             Canvas.SetLeft(squares[0], points[0].X);
-            //TEMPORARY
-            points.Add(new Point { X = 0, Y = 20 });
-            points.Add(new Point { X = 20, Y = 0 });
-            points.Add(new Point { X = 20, Y = 20 });
+            
 
             for (int i = 1; i < 4; i++)  //create other blocks
             {
-                /*  Random randomize = new Random();
+                  Random randomize = new Random();
                   // randomizes next to which square to PLACE A NEW SQUARE
                   int squareNum = randomize.Next(0, squares.Count);
 
@@ -136,12 +133,12 @@ namespace TetrisGame
                   } while (IsRepeated);  //repeats if there is a repeat
                                          //creating a new square
 
-                  //TEMPORARY
+                //TEMPORARY
+
+                points.Add(new Point { X = SquareX, Y = SquareY });
 
 
-                  points.Add(new Point { X = SquareX, Y = SquareY });
-                */
-               
+
 
                 squares.Add(new Rectangle()
                 {

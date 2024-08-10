@@ -162,38 +162,46 @@ namespace TetrisGame
 
                             if (subBlockY == yCoordinate)
                             {
-                                //removed = true;
+                               // removed = true;
                                 fallingElements[i].SubPositions.RemoveAt(j);
-                               // for (int k = 0; k < fallingElements[i].SubPositions.Count; k++)
-                                //{
-                                  //  Point temp = fallingElements[i].SubPositions[k];
-                                   // if (temp.Y + fallingElements[i].Position.Y > yCoordinate)
-                                    //only moving up squares that are lower
-                                   // {
-                                      //  fallingElements[i].SubPositions[k] = new Point(temp.X, temp.Y - squareSize);
-                                       
-                                   // }
-                                //}
+                             //    for (int k = 0; k < fallingElements[i].SubPositions.Count; k++)
+                              //  {
+                                //  Point temp = fallingElements[i].SubPositions[k];
+                                // if (temp.Y + fallingElements[i].Position.Y > yCoordinate)
+                                //only moving up squares that are lower
+                                // {
+                                //  fallingElements[i].SubPositions[k] = new Point(temp.X, temp.Y - squareSize);
+
+                              //   }
+                              //  }
 
                             }
-                            else if(subBlockY > yCoordinate)
-                            {
-                                Point temp = fallingElements[i].SubPositions[j];
-                                temp = new Point(temp.X, temp.Y - squareSize);
-                            }
-                        
                         }
+                        for (int j = 0; j < fallingElements[i].SubPositions.Count; j++)
+                        {
+                            double subBlockY = fallingElements[i].SubPositions[j].Y + fallingElements[i].Position.Y;
+
+                            if (subBlockY > yCoordinate)
+                            {
+                                fallingElements[i].SubPositions[j] = new Point(fallingElements[i].SubPositions[j].X, fallingElements[i].SubPositions[j].Y - squareSize);
+                            }
+                        }
+
                         if (fallingElements[i].SubPositions.Count == 0)
                         {
                             fallingElements.RemoveAt(i);
                         }
-                        else
+                        else // if(removed)
                         {
                             fallingElements[i].SpawnContainer.Height -= squareSize;
                             fallingElements[i].Position = new Point(fallingElements[i].Position.X, fallingElements[i].Position.Y+squareSize);
                             Canvas.SetTop(fallingElements[i], fallingElements[i].Position.Y);
                             Canvas.SetLeft(fallingElements[i], fallingElements[i].Position.X);
                         }
+                        //else
+                        //{
+                          //  aboveElements.Add(fallingElements[i]);
+                       // }
                         
 
                     }
@@ -221,6 +229,10 @@ namespace TetrisGame
                 MoveFallingElement();
                 }
                 currentlyFalling = null;
+               // x.Position = new Point(x.Position.X, x.Position.Y + squareSize);
+
+                //Canvas.SetTop(x, x.Position.Y);
+                //Canvas.SetLeft(x, x.Position.X);
             }
 
         }
@@ -303,7 +315,7 @@ namespace TetrisGame
             //  }
             MoveFallingElement();
 
-            if (EndGameCondition() == true)
+            if (EndGameCondition())
             {
                 gameTimer.IsEnabled = false;
             }
