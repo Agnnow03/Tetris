@@ -54,7 +54,7 @@ namespace TetrisGame
             SpawnContainer.Width = maxWidth;
         }
         private void CreateFallingElement()
-        { //creates a randomized figure (without drawing it)
+        { //
           //space in which it initializes 80x80 block
           //FIRST choose on of four possible positions in X/Y
 

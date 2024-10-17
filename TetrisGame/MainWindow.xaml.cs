@@ -26,11 +26,14 @@ namespace TetrisGame
         int gamePoints=0;
         int rowPoint = 10;
         FallingElementControl currentlyFalling;
-        double squareSize=20;
+        const double squareSize=20;
+        const double maxElementWidth = 4 * squareSize;
+        const double maxElementHeight = maxElementWidth;
         int fallingSpeed = 300;
         public enum Turn { Left, Right, None};
         bool rotating = false;
         private Turn fallingDirection;
+        
 
         List<FallingElementControl> fallingElements = new List<FallingElementControl>();
 
@@ -45,34 +48,32 @@ namespace TetrisGame
         }
         private void TryToRotate()
         {
-            if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Height) >= GameArea.Width) &&(rotating==true)) rotating=false;
-            if ((currentlyFalling.Position.Y+currentlyFalling.SpawnContainer.Width >=GameArea.Height) && (rotating == true)) rotating = false;
+            if (rotating)
+            {
+                if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Height) >= GameArea.Width)) rotating = false;
+                if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Width >= GameArea.Height)) rotating = false;
 
+            }
         }
         private void TryToTurn()
         {
-            if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Height) >= GameArea.Width) && (fallingDirection == Turn.Right)) fallingDirection = Turn.None;
+            if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Width) >= GameArea.Width) && (fallingDirection == Turn.Right)) fallingDirection = Turn.None;
             if ((currentlyFalling.Position.X <= 0) && (fallingDirection == Turn.Left)) fallingDirection = Turn.None;
 
         }
-        private bool EndGameCondition()
-        {//add condition to end
-            return false;
-        }
-       
-        private void MoveFallingElement()
+        private void CollisionCheck()
         {
-           
-           if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Height) >= (GameArea.Height))
+
+            if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Height) >= (GameArea.Height))
             {
                 doneFalling = true;
                 return;
             }
-           double nextY = currentlyFalling.Position.Y;
 
             TryToTurn();
+            TryToRotate();//clockwise rotation
 
-            for (int i = 0; i < fallingElements.Count ; i++)//CUrrentlyFalling
+            for (int i = 0; i < fallingElements.Count; i++)//CUrrentlyFalling
             {
                 bool heightRangeCondition = ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Height) >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= (fallingElements[i].Position.Y + fallingElements[i].SpawnContainer.Height));
                 if (fallingElements[i] != currentlyFalling)
@@ -97,12 +98,12 @@ namespace TetrisGame
                                         return;
 
                                     }//height condition
-                                    bool CanNotTurnRightCondition = ((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Width) == fallingElements[i].Position.X);
+                                    //bool CanNotTurnRightCondition = ((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Width) == fallingElements[i].Position.X);
 
-                                    bool CanNotTurnLeftCondition = currentlyFalling.Position.X == (fallingElements[i].Position.X + fallingElements[i].SpawnContainer.Width);
+                                   // bool CanNotTurnLeftCondition = currentlyFalling.Position.X == (fallingElements[i].Position.X + fallingElements[i].SpawnContainer.Width);
 
-                                    if (CanNotTurnLeftCondition) { fallingDirection = Turn.None; break; }
-                                    if (CanNotTurnRightCondition) { fallingDirection = Turn.None; break; }
+                                   // if (CanNotTurnLeftCondition) { fallingDirection = Turn.None; break; }
+                                   // if (CanNotTurnRightCondition) { fallingDirection = Turn.None; break; }
                                 }
                             }
                         }
@@ -110,9 +111,28 @@ namespace TetrisGame
                 }
 
             }
-            
-           
-            
+        }
+        private bool EndGameCondition()//niezaimplementowane
+        {//add condition to end
+            return false;
+        }
+       
+        private void MoveFallingElement()
+        {
+         
+            CollisionCheck();//for turning and rotating
+
+            if (doneFalling)
+            {
+                return;
+            }
+
+            if (rotating)
+            {
+                Rotate();
+            }
+
+            double nextY = currentlyFalling.Position.Y;
             nextY += squareSize;
             //moving, after checking conditions
             double nextX = currentlyFalling.Position.X;
@@ -137,7 +157,6 @@ namespace TetrisGame
 
             fallingDirection = Turn.None;
 
-           
         }
         private void ClearRow(double yCoordinate)
         {
@@ -307,19 +326,13 @@ namespace TetrisGame
                 RowCompleteCheck();
                 NewFallingElement();
             }
-            // TryToRotate();//clockwise rotation
-            // if (rotating)
-            //  {
-            //     Rotate();
-
-            //  }
-            MoveFallingElement();
 
             if (EndGameCondition())
             {
                 gameTimer.IsEnabled = false;
             }
-           
+
+            MoveFallingElement();
 
         }
        
