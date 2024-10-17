@@ -149,24 +149,22 @@ namespace TetrisGame
         private void MoveFallingElement()
         {
             //TESTOWO!!!!
-            
-            TryToRotate(currentlyFalling);
-            
 
             if (WillCollide(currentlyFalling)) {
                 doneFalling = true;
                 return;
                 
-            } 
-           // if (doneFalling)
+            }
+            TryToRotate(currentlyFalling);
+            // if (doneFalling)
             //{
-             //   return;
-           // }
-           
-           // if (rotating)
-           // {
-           //     Rotate(currentlyFalling);
-           // }
+            //   return;
+            // }
+
+            // if (rotating)
+            // {
+            //     Rotate(currentlyFalling);
+            // }
 
             double nextY = currentlyFalling.Position.Y;
             nextY += squareSize;
