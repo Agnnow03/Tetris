@@ -46,12 +46,27 @@ namespace TetrisGame
             Canvas.SetLeft(currentlyFalling,currentlyFalling.Position.X);
             doneFalling = false;
         }
-        private void TryToRotate()
+       // private void TryToRotate()
+      //  {
+            
+       // }
+        private void TryToRotate(FallingElementControl elementToRotate)
         {
             if (rotating)
             {
-                if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Height) >= GameArea.Width)) rotating = false;
-                if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Width >= GameArea.Height)) rotating = false;
+                rotating = false;
+                if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Height) >= GameArea.Width)) {  return; };
+                if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Width >= GameArea.Height)) {  return; };
+
+                FallingElementControl elementToCheck = elementToRotate;
+                Rotate(elementToCheck);
+                if (!WillCollide(elementToCheck))
+                {
+                    currentlyFalling = elementToCheck;
+                    currentlyFalling.RepositionSquares();
+                    Canvas.SetTop(currentlyFalling, currentlyFalling.Position.Y);
+                    Canvas.SetLeft(currentlyFalling, currentlyFalling.Position.X);
+                }
 
             }
         }
@@ -61,49 +76,62 @@ namespace TetrisGame
             if ((currentlyFalling.Position.X <= 0) && (fallingDirection == Turn.Left)) fallingDirection = Turn.None;
 
         }
-        private void CollisionCheck()
+        private bool WillCollide(FallingElementControl elementToCheck)
         {
 
-            if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Height) >= (GameArea.Height))
+            if ((elementToCheck.Position.Y + elementToCheck.SpawnContainer.Height) >= (GameArea.Height))
             {
-                doneFalling = true;
-                return;
+              //  doneFalling = true;
+                return true;
             }
 
             TryToTurn();
-            TryToRotate();//clockwise rotation
+          
+            //clockwise rotation
 
             for (int i = 0; i < fallingElements.Count; i++)//CUrrentlyFalling
             {
-                bool heightRangeCondition = ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Height) >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= (fallingElements[i].Position.Y + fallingElements[i].SpawnContainer.Height));
-                if (fallingElements[i] != currentlyFalling)
+                
+                if (fallingElements[i] != elementToCheck)
                 {
+                   bool heightRangeCondition = ((elementToCheck.Position.Y + elementToCheck.SpawnContainer.Height) >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= (fallingElements[i].Position.Y + fallingElements[i].SpawnContainer.Height));
+                   // bool rotationRangeForCollision = (currentlyFalling);
+                   bool rangeForAnyCollision = (elementToCheck.Position.Y +maxElementHeight >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= fallingElements[i].Position.Y+maxElementHeight);
+                    //condition to check if there is a possible collision when falling/rotating
+                    if (rangeForAnyCollision) {
+                        //adding here a new condition
+                        
+                        foreach (Point subPosition in elementToCheck.SubPositions)
+                       {
+                        double subPositionX = subPosition.X + elementToCheck.Position.X;
+                        double subPositionY = subPosition.Y + elementToCheck.Position.Y;
 
-                    foreach (Point subPosition in currentlyFalling.SubPositions)
-                    {
-                        double subPositionX = subPosition.X + currentlyFalling.Position.X;
-                        double subPositionY = subPosition.Y + currentlyFalling.Position.Y;
-
-                        if (heightRangeCondition)
-                        {
+                            //TryToRotate(subPosition);
                             if ((subPositionY + squareSize) >= fallingElements[i].Position.Y)
                             {
                                 foreach (Point fallenSubPosition in fallingElements[i].SubPositions)
                                 {
+
                                     double fallenSubPositionX = fallenSubPosition.X + fallingElements[i].Position.X;
                                     double fallenSubPositionY = fallenSubPosition.Y + fallingElements[i].Position.Y;
-                                    if ((fallenSubPositionX == subPositionX) && (((subPositionY + squareSize) == fallenSubPositionY) || (subPositionY == fallenSubPositionY)))
-                                    {
-                                        doneFalling = true;
-                                        return;
+                                    bool CanNotTurnRightCondition = ((elementToCheck.Position.X + elementToCheck.SpawnContainer.Width) == fallingElements[i].Position.X);
 
-                                    }//height condition
-                                    //bool CanNotTurnRightCondition = ((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Width) == fallingElements[i].Position.X);
+                                    bool CanNotTurnLeftCondition = elementToCheck.Position.X == (fallingElements[i].Position.X + fallingElements[i].SpawnContainer.Width);
 
-                                   // bool CanNotTurnLeftCondition = currentlyFalling.Position.X == (fallingElements[i].Position.X + fallingElements[i].SpawnContainer.Width);
+                                    if (CanNotTurnLeftCondition) { fallingDirection = Turn.None; }
+                                    if (CanNotTurnRightCondition) { fallingDirection = Turn.None; }
+                                    //if (heightRangeCondition)
+                                    //{
+                                        if ((fallenSubPositionX == subPositionX) && (((subPositionY + squareSize) == fallenSubPositionY) || (subPositionY == fallenSubPositionY)))
+                                        {
+                                           // doneFalling = true;
+                                            return true;
 
-                                   // if (CanNotTurnLeftCondition) { fallingDirection = Turn.None; break; }
-                                   // if (CanNotTurnRightCondition) { fallingDirection = Turn.None; break; }
+                                        }
+
+                                        //height condition
+                                       
+                                   // }
                                 }
                             }
                         }
@@ -111,6 +139,7 @@ namespace TetrisGame
                 }
 
             }
+            return false;
         }
         private bool EndGameCondition()//niezaimplementowane
         {//add condition to end
@@ -119,18 +148,25 @@ namespace TetrisGame
        
         private void MoveFallingElement()
         {
-         
-            CollisionCheck();//for turning and rotating
+            //TESTOWO!!!!
+            
+            TryToRotate(currentlyFalling);
+            
 
-            if (doneFalling)
-            {
+            if (WillCollide(currentlyFalling)) {
+                doneFalling = true;
                 return;
-            }
-
-            if (rotating)
-            {
-                Rotate();
-            }
+                
+            } 
+           // if (doneFalling)
+            //{
+             //   return;
+           // }
+           
+           // if (rotating)
+           // {
+           //     Rotate(currentlyFalling);
+           // }
 
             double nextY = currentlyFalling.Position.Y;
             nextY += squareSize;
@@ -255,32 +291,38 @@ namespace TetrisGame
             }
 
         }
-        private void Rotate()
+        private void Rotate(FallingElementControl elementToRotate)//correct to make it rotate right
         {
-            double nextX=0;
-            double nextY=0;
-            double correctPosition = 0;
-            foreach (Point subElement in currentlyFalling.SubPositions)
-            {
-                nextX = subElement.Y;
-                nextY = -subElement.X;
-                if (subElement.X > correctPosition)
+         
+            //  double nextX=0;
+            // double nextY=0;
+            // double correctPosition = 0;
+            //foreach (Point subElement in elementToRotate.SubPositions)
+            for(int i = 0; i < elementToRotate.SubPositions.Count; i++)
+            { 
+                double nextX = -elementToRotate.SubPositions[i].Y + elementToRotate.SpawnContainer.Height-squareSize;
+                double nextY = elementToRotate.SubPositions[i].X;
+               
+                elementToRotate.SubPositions[i] = new Point(nextX, nextY);
+              /*  if (subElement.X > correctPosition)
                 {
                     correctPosition = subElement.X;
-                }
+                }*/
             }
-            if (correctPosition > 0)
-            {
-                for (int i=0;i<currentlyFalling.SubPositions.Count;i++)
-                {
-                    nextY += correctPosition;
-                    currentlyFalling.SubPositions[i] = new Point(nextX, nextY);
-                }
-            }
-            currentlyFalling.CorrectWidthHeight();
-            Canvas.SetTop(currentlyFalling, currentlyFalling.Position.Y);
-            Canvas.SetLeft(currentlyFalling, currentlyFalling.Position.X);
-            rotating = false;
+            /* if (correctPosition > 0)
+             {
+                 for (int i=0;i<elementToRotate.SubPositions.Count;i++)
+                 {
+                     nextY += correctPosition;
+                     elementToRotate.SubPositions[i] = new Point(nextX, nextY);
+                 }
+             }*/
+            //elementToRotate.CorrectWidthHeight();
+            elementToRotate.SpawnContainer.Height = elementToRotate.SpawnContainer.Width;
+            elementToRotate.SpawnContainer.Width = elementToRotate.SpawnContainer.Height;
+
+
+
         }
         private void RowCompleteCheck()
         {

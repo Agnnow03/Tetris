@@ -39,6 +39,14 @@ namespace TetrisGame
         private List<Point> points = new List<Point>();  //WILL IT WORK?
         public List<Point> SubPositions { get { return points; } }
         
+        public void RepositionSquares()
+        {   for(int i=0;i < points.Count;i++ )
+            {
+                    Canvas.SetTop(squares[i], points[i].Y);
+                    Canvas.SetLeft(squares[i], points[i].X);
+            }
+            
+        }
         public void CorrectWidthHeight()
         {
             double maxHeight = points[0].Y;  //remember to add squareSize
