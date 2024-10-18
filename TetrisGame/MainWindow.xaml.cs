@@ -27,6 +27,7 @@ namespace TetrisGame
         int rowPoint = 10;
         double maxElementsStackHeight = 100;
         FallingElementControl currentlyFalling=null;
+        TextBox scoreBox = new TextBox();
         const double squareSize=20;
         const double maxElementWidth = 4 * squareSize;
         const double maxElementHeight = maxElementWidth;
@@ -146,9 +147,9 @@ namespace TetrisGame
         {//add condition to end
             if (elementToCheck.Position.Y <= maxElementsStackHeight)
             {
-                    gameTimer.IsEnabled = false;
+                gameTimer.IsEnabled = false;
                 TextBox gameOverText = new TextBox();
-                gameOverText.Text = gamePoints.ToString();
+                gameOverText.Text = "GameOver";
                 gameOverText.FontSize = 30;
                 gameOverText.IsReadOnly = true;
                 gameOverText.BorderBrush = Brushes.Transparent;
@@ -210,6 +211,7 @@ namespace TetrisGame
         private void ClearRow(double yCoordinate)
         {
             gamePoints += rowPoint;
+            scoreBox.Text =  "Score:" + gamePoints.ToString();
             List<FallingElementControl> aboveElements = new List<FallingElementControl>();
             //for storing elements that will fall down after deleting a row
             for (int i= 0; i < fallingElements.Count;i++)
@@ -364,6 +366,7 @@ namespace TetrisGame
                 if (rows[key] >= GameArea.Width)
                 {
                     ClearRow(key);
+                    rows[key] = 0;
                 }
             }
 
@@ -372,7 +375,7 @@ namespace TetrisGame
         private void StartNewGame()
         {
             gameTimer.Interval = TimeSpan.FromMilliseconds(fallingSpeed);
-            TextBox scoreBox = new TextBox();
+            
             scoreBox.Text = "Score:"+ gamePoints.ToString();
             scoreBox.FontSize = 20;
             scoreBox.IsReadOnly = true;
