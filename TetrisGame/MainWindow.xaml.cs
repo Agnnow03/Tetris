@@ -25,7 +25,8 @@ namespace TetrisGame
         bool doneFalling = true;  //why true?
         int gamePoints=0;
         int rowPoint = 10;
-        FallingElementControl currentlyFalling;
+        double maxElementsStackHeight = 100;
+        FallingElementControl currentlyFalling=null;
         const double squareSize=20;
         const double maxElementWidth = 4 * squareSize;
         const double maxElementHeight = maxElementWidth;
@@ -38,7 +39,7 @@ namespace TetrisGame
         List<FallingElementControl> fallingElements = new List<FallingElementControl>();
 
          private void NewFallingElement()
-         {  
+         {
             currentlyFalling = new FallingElementControl();
             fallingElements.Add(currentlyFalling);
             GameArea.Children.Add(currentlyFalling);
@@ -141,36 +142,50 @@ namespace TetrisGame
             }
             return false;
         }
-        private bool EndGameCondition()//niezaimplementowane
+        private void EndGameCondition(FallingElementControl elementToCheck)//niezaimplementowane
         {//add condition to end
-            return false;
+            if (elementToCheck.Position.Y <= maxElementsStackHeight)
+            {
+                    gameTimer.IsEnabled = false;
+                TextBox gameOverText = new TextBox();
+                gameOverText.Text = gamePoints.ToString();
+                gameOverText.FontSize = 30;
+                gameOverText.IsReadOnly = true;
+                gameOverText.BorderBrush = Brushes.Transparent;
+                //BorderStyle = System.Windows.Forms.BorderStyle.None;
+                GameArea.Children.Add(gameOverText);
+                Canvas.SetTop(gameOverText, 20);
+                Canvas.SetLeft(gameOverText, 100);
+            }
         }
        
         private void MoveFallingElement()
         {
             //TESTOWO!!!!
-
+          
             if (WillCollide(currentlyFalling)) {
                 doneFalling = true;
                 return;
                 
             }
+           
             TryToRotate(currentlyFalling);
             // if (doneFalling)
             //{
             //   return;
             // }
+            double nextY = currentlyFalling.Position.Y;
+            nextY += squareSize;
+            //moving, after checking conditions
+            double nextX = currentlyFalling.Position.X;
 
             // if (rotating)
             // {
             //     Rotate(currentlyFalling);
             // }
 
-            double nextY = currentlyFalling.Position.Y;
-            nextY += squareSize;
-            //moving, after checking conditions
-            double nextX = currentlyFalling.Position.X;
-            
+
+
             switch (fallingDirection)
             {
                 case Turn.Left:  //ADD IF here                                                                           
@@ -281,6 +296,7 @@ namespace TetrisGame
                 {
                 MoveFallingElement();
                 }
+               // EndGameCondition(currentlyFalling);
                 currentlyFalling = null;
                // x.Position = new Point(x.Position.X, x.Position.Y + squareSize);
 
@@ -315,9 +331,9 @@ namespace TetrisGame
                      elementToRotate.SubPositions[i] = new Point(nextX, nextY);
                  }
              }*/
-            //elementToRotate.CorrectWidthHeight();
-            elementToRotate.SpawnContainer.Height = elementToRotate.SpawnContainer.Width;
-            elementToRotate.SpawnContainer.Width = elementToRotate.SpawnContainer.Height;
+            elementToRotate.CorrectWidthHeight();
+          //  elementToRotate.SpawnContainer.Height = elementToRotate.SpawnContainer.Width;
+          //  elementToRotate.SpawnContainer.Width = elementToRotate.SpawnContainer.Height;
 
 
 
@@ -356,6 +372,15 @@ namespace TetrisGame
         private void StartNewGame()
         {
             gameTimer.Interval = TimeSpan.FromMilliseconds(fallingSpeed);
+            TextBox scoreBox = new TextBox();
+            scoreBox.Text = "Score:"+ gamePoints.ToString();
+            scoreBox.FontSize = 20;
+            scoreBox.IsReadOnly = true;
+            scoreBox.BorderBrush = Brushes.Transparent;
+            GameArea.Children.Add(scoreBox);
+            Canvas.SetTop(scoreBox, 20);
+            Canvas.SetLeft(scoreBox, 260);
+
         }
         FallingElementControl Test1 = new FallingElementControl();
         
@@ -363,14 +388,15 @@ namespace TetrisGame
         {
             if (doneFalling)
             {
+                if (currentlyFalling != null)
+                {
+                    EndGameCondition(currentlyFalling);
+                }
                 RowCompleteCheck();
                 NewFallingElement();
             }
 
-            if (EndGameCondition())
-            {
-                gameTimer.IsEnabled = false;
-            }
+          
 
             MoveFallingElement();
 
