@@ -456,8 +456,11 @@ namespace TetrisGame
             {
                 return;
             }
-            
-            MoveFallingElement();
+
+            if (MoveFallingElement())
+            {
+                Rotate(currentlyFalling);
+            }
             
             
         }
