@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 
 namespace TetrisGame
 {
@@ -25,6 +26,13 @@ namespace TetrisGame
         public Point Position { get; set; }
         private const double startingPositionX=120;
         private const double startingPositionY=0;
+        private int SquareSize = 20;
+        private SolidColorBrush SquareColor = Brushes.Green;
+
+        private List<UIElement> squares = new List<UIElement>();
+        private List<Point> points = new List<Point>();  //WILL IT WORK?
+        public List<Point> SubPositions { get { return points; } set { points = value; } }
+
         public FallingElementControl()
         {            
             InitializeComponent();
@@ -32,13 +40,7 @@ namespace TetrisGame
             this.Position = new Point(startingPositionX, startingPositionY);            
         }
 
-        private int SquareSize = 20;
-        private SolidColorBrush SquareColor = Brushes.Green;
-
-        private List<UIElement> squares = new List<UIElement>();
-        private List<Point> points = new List<Point>();  //WILL IT WORK?
-        public List<Point> SubPositions { get { return points; } }
-        
+      
         public void RepositionSquares()
         {   for(int i=0;i < points.Count;i++ )
             {
@@ -47,19 +49,21 @@ namespace TetrisGame
             }
             
         }
+        
         public void CorrectWidthHeight()
         {
-            double maxHeight = points[0].Y;  //remember to add squareSize
-            double maxWidth = points[0].X;
+            double maxHeight = this.points[0].Y;  //remember to add squareSize
+            double maxWidth = this.points[0].X;
             for (int i = 1; i < 4; i++)
             {
-                if (maxHeight < points[i].Y) maxHeight = points[i].Y;
-                if (maxWidth < points[i].X) maxWidth = points[i].X;
+                if (maxHeight < this.points[i].Y) maxHeight = this.points[i].Y;
+                if (maxWidth < this.points[i].X) maxWidth = this.points[i].X;
             }
             maxHeight += SquareSize;
             maxWidth += SquareSize;
-            SpawnContainer.Height = maxHeight;
-            SpawnContainer.Width = maxWidth;
+            this.SpawnContainer.Height = maxHeight;
+            this.SpawnContainer.Width = maxWidth;
+            
         }
         private void CreateFallingElement()
         { //
@@ -162,7 +166,7 @@ namespace TetrisGame
             } //later check for errors
 
 
-            this.CorrectWidthHeight();
+            CorrectWidthHeight();
             
         }
     }

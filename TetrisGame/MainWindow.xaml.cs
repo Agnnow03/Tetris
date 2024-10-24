@@ -27,7 +27,7 @@ namespace TetrisGame
         int rowPoint = 10;
         double maxElementsStackHeight = 100;
         FallingElementControl currentlyFalling=null;
-        TextBox scoreBox = new TextBox();
+        Label scoreText = new Label();
         const double squareSize=20;
         const double maxElementWidth = 4 * squareSize;
         const double maxElementHeight = maxElementWidth;
@@ -48,27 +48,24 @@ namespace TetrisGame
             Canvas.SetLeft(currentlyFalling,currentlyFalling.Position.X);
             doneFalling = false;
         }
-       // private void TryToRotate()
-      //  {
-            
-       // }
-        private void TryToRotate(FallingElementControl elementToRotate)
+       
+        private void Rotate(FallingElementControl elementToRotate)
         {
             if (rotating)
             {
                 rotating = false;
-                if (((currentlyFalling.Position.X + currentlyFalling.SpawnContainer.Height) >= GameArea.Width)) {  return; };
-                if ((currentlyFalling.Position.Y + currentlyFalling.SpawnContainer.Width >= GameArea.Height)) {  return; };
+                if (((elementToRotate.Position.X + elementToRotate.SpawnContainer.Height) >= GameArea.Width)) {  return; };
+                if ((elementToRotate.Position.Y + elementToRotate.SpawnContainer.Width >= GameArea.Height)) {  return; };
+                TryToRotate(elementToRotate);
 
-                FallingElementControl elementToCheck = elementToRotate;
-                Rotate(elementToCheck);
-                if (!WillCollide(elementToCheck))
+             /*   if (!RotationWillCollide(elementToCheck))
                 {
-                    currentlyFalling = elementToCheck;
-                    currentlyFalling.RepositionSquares();
+                    Rotate(currentlyFalling);
+                    
                     Canvas.SetTop(currentlyFalling, currentlyFalling.Position.Y);
                     Canvas.SetLeft(currentlyFalling, currentlyFalling.Position.X);
                 }
+               */
 
             }
         }
@@ -98,9 +95,9 @@ namespace TetrisGame
                 {
                    bool heightRangeCondition = ((elementToCheck.Position.Y + elementToCheck.SpawnContainer.Height) >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= (fallingElements[i].Position.Y + fallingElements[i].SpawnContainer.Height));
                    // bool rotationRangeForCollision = (currentlyFalling);
-                   bool rangeForAnyCollision = (elementToCheck.Position.Y +maxElementHeight >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= fallingElements[i].Position.Y+maxElementHeight);
+                   //bool rangeForAnyCollision = (elementToCheck.Position.Y +maxElementHeight >= fallingElements[i].Position.Y) && (currentlyFalling.Position.Y <= fallingElements[i].Position.Y+maxElementHeight);
                     //condition to check if there is a possible collision when falling/rotating
-                    if (rangeForAnyCollision) {
+                    if (heightRangeCondition) {
                         //adding here a new condition
                         
                         foreach (Point subPosition in elementToCheck.SubPositions)
@@ -108,7 +105,7 @@ namespace TetrisGame
                         double subPositionX = subPosition.X + elementToCheck.Position.X;
                         double subPositionY = subPosition.Y + elementToCheck.Position.Y;
 
-                            //TryToRotate(subPosition);
+                            
                             if ((subPositionY + squareSize) >= fallingElements[i].Position.Y)
                             {
                                 foreach (Point fallenSubPosition in fallingElements[i].SubPositions)
@@ -116,9 +113,9 @@ namespace TetrisGame
 
                                     double fallenSubPositionX = fallenSubPosition.X + fallingElements[i].Position.X;
                                     double fallenSubPositionY = fallenSubPosition.Y + fallingElements[i].Position.Y;
-                                    bool CanNotTurnRightCondition = ((elementToCheck.Position.X + elementToCheck.SpawnContainer.Width) == fallingElements[i].Position.X);
-
-                                    bool CanNotTurnLeftCondition = elementToCheck.Position.X == (fallingElements[i].Position.X + fallingElements[i].SpawnContainer.Width);
+                                    
+                                    bool CanNotTurnRightCondition = ((subPositionX + squareSize) == fallenSubPositionX);
+                                    bool CanNotTurnLeftCondition = subPositionX == (fallenSubPositionX + squareSize);
 
                                     if (CanNotTurnLeftCondition) { fallingDirection = Turn.None; }
                                     if (CanNotTurnRightCondition) { fallingDirection = Turn.None; }
@@ -143,49 +140,77 @@ namespace TetrisGame
             }
             return false;
         }
-        private void EndGameCondition(FallingElementControl elementToCheck)//niezaimplementowane
-        {//add condition to end
-            if (elementToCheck.Position.Y <= maxElementsStackHeight)
+
+        private bool RotationWillCollide(FallingElementControl elementToCheck, List<Point> rotatedSubList)
+        {
+            double elementX = elementToCheck.Position.X;
+            double elementY= elementToCheck.Position.Y;
+            double rotatedHeight = elementToCheck.SpawnContainer.Width; 
+            double rotatedWidth = elementToCheck.SpawnContainer.Height;
+            
+            for (int i = 0; i < fallingElements.Count; i++)
+            {
+                if (fallingElements[i] != elementToCheck)
+                {
+                    bool heightRangeCondition = (elementY + rotatedHeight > fallingElements[i].Position.Y)
+                        && (elementY < fallingElements[i].Position.Y + fallingElements[i].SpawnContainer.Height);
+                    bool widthRangeCondition = (elementX + rotatedWidth > fallingElements[i].Position.X)
+                        && (elementX < fallingElements[i].Position.X + fallingElements[i].SpawnContainer.Width);
+                    if (heightRangeCondition && widthRangeCondition)
+                    {
+                        foreach (Point subPosition in rotatedSubList)
+                        {
+                            double subPositionX = subPosition.X + elementX;
+                            double subPositionY = subPosition.Y + elementY;
+
+                                foreach (Point fallenSubPosition in fallingElements[i].SubPositions)// podelementy reszty elementów
+                                {
+
+                                    double fallenSubPositionX = fallenSubPosition.X + fallingElements[i].Position.X;
+                                    double fallenSubPositionY = fallenSubPosition.Y + fallingElements[i].Position.Y;
+                                    if((fallenSubPositionX ==subPositionX)&&(fallenSubPositionY == subPositionY))
+                                    {
+                                        return true;
+                                    }
+                                   
+                                }
+                            
+                        }
+                    }
+                }
+
+            }
+            return false;
+        }
+        private bool EndGameCondition(FallingElementControl elementToCheck)
+        {
+            if ((elementToCheck!=null)&&(elementToCheck.Position.Y <= maxElementsStackHeight))
             {
                 gameTimer.IsEnabled = false;
-                TextBox gameOverText = new TextBox();
-                gameOverText.Text = "GameOver";
+                Label gameOverText = new Label();
+                gameOverText.Content = "Game over";
                 gameOverText.FontSize = 30;
-                gameOverText.IsReadOnly = true;
-                gameOverText.BorderBrush = Brushes.Transparent;
-                //BorderStyle = System.Windows.Forms.BorderStyle.None;
+               
                 GameArea.Children.Add(gameOverText);
                 Canvas.SetTop(gameOverText, 20);
                 Canvas.SetLeft(gameOverText, 100);
+                return true;
             }
+            else return false;
         }
        
-        private void MoveFallingElement()
+        private bool MoveFallingElement()
         {
-            //TESTOWO!!!!
-          
             if (WillCollide(currentlyFalling)) {
                 doneFalling = true;
-                return;
+                return false;
                 
             }
-           
-            TryToRotate(currentlyFalling);
-            // if (doneFalling)
-            //{
-            //   return;
-            // }
+        
             double nextY = currentlyFalling.Position.Y;
             nextY += squareSize;
-            //moving, after checking conditions
+           
             double nextX = currentlyFalling.Position.X;
-
-            // if (rotating)
-            // {
-            //     Rotate(currentlyFalling);
-            // }
-
-
 
             switch (fallingDirection)
             {
@@ -206,12 +231,12 @@ namespace TetrisGame
             Canvas.SetLeft(currentlyFalling, currentlyFalling.Position.X);
 
             fallingDirection = Turn.None;
-
+            return true;
         }
         private void ClearRow(double yCoordinate)
         {
             gamePoints += rowPoint;
-            scoreBox.Text =  "Score:" + gamePoints.ToString();
+            scoreText.Content =  "Score:" + gamePoints.ToString();
             List<FallingElementControl> aboveElements = new List<FallingElementControl>();
             //for storing elements that will fall down after deleting a row
             for (int i= 0; i < fallingElements.Count;i++)
@@ -307,33 +332,30 @@ namespace TetrisGame
             }
 
         }
-        private void Rotate(FallingElementControl elementToRotate)//correct to make it rotate right
+        private void TryToRotate(FallingElementControl elementToRotate)//correct to make it rotate right
         {
          
-            //  double nextX=0;
-            // double nextY=0;
-            // double correctPosition = 0;
-            //foreach (Point subElement in elementToRotate.SubPositions)
+           List<Point> rotatedSubElements = new List<Point>();
             for(int i = 0; i < elementToRotate.SubPositions.Count; i++)
             { 
                 double nextX = -elementToRotate.SubPositions[i].Y + elementToRotate.SpawnContainer.Height-squareSize;
                 double nextY = elementToRotate.SubPositions[i].X;
                
-                elementToRotate.SubPositions[i] = new Point(nextX, nextY);
-              /*  if (subElement.X > correctPosition)
-                {
-                    correctPosition = subElement.X;
-                }*/
-            }
-            /* if (correctPosition > 0)
-             {
-                 for (int i=0;i<elementToRotate.SubPositions.Count;i++)
-                 {
-                     nextY += correctPosition;
-                     elementToRotate.SubPositions[i] = new Point(nextX, nextY);
-                 }
-             }*/
-            elementToRotate.CorrectWidthHeight();
+               rotatedSubElements.Add(new Point(nextX, nextY));
+             
+            }//calculating X,Y for rotation
+
+            if (!RotationWillCollide(elementToRotate,rotatedSubElements))
+               {
+
+                elementToRotate.SubPositions = rotatedSubElements;
+                elementToRotate.RepositionSquares();
+                elementToRotate.CorrectWidthHeight();
+                Canvas.SetTop(elementToRotate, elementToRotate.Position.Y);
+                Canvas.SetLeft(elementToRotate, elementToRotate.Position.X);
+               }
+            
+
           //  elementToRotate.SpawnContainer.Height = elementToRotate.SpawnContainer.Width;
           //  elementToRotate.SpawnContainer.Width = elementToRotate.SpawnContainer.Height;
 
@@ -376,13 +398,12 @@ namespace TetrisGame
         {
             gameTimer.Interval = TimeSpan.FromMilliseconds(fallingSpeed);
             
-            scoreBox.Text = "Score:"+ gamePoints.ToString();
-            scoreBox.FontSize = 20;
-            scoreBox.IsReadOnly = true;
-            scoreBox.BorderBrush = Brushes.Transparent;
-            GameArea.Children.Add(scoreBox);
-            Canvas.SetTop(scoreBox, 20);
-            Canvas.SetLeft(scoreBox, 260);
+            scoreText.Content = "Score:"+ gamePoints.ToString();
+            scoreText.FontSize = 20;
+          
+            GameArea.Children.Add(scoreText);
+            Canvas.SetTop(scoreText, 20);
+            Canvas.SetLeft(scoreText, 260);
 
         }
         FallingElementControl Test1 = new FallingElementControl();
@@ -391,20 +412,26 @@ namespace TetrisGame
         {
             if (doneFalling)
             {
-                if (currentlyFalling != null)
+                if(EndGameCondition(currentlyFalling))
                 {
-                    EndGameCondition(currentlyFalling);
+                    return;
                 }
-                RowCompleteCheck();
-                NewFallingElement();
+                else
+                {
+                    RowCompleteCheck();
+                    NewFallingElement();
+                }
+               
             }
+            if (MoveFallingElement())
+            {
+                Rotate(currentlyFalling);
+            }
+         
 
-          
-
-            MoveFallingElement();
 
         }
-       
+
         private void Window_ContentRendered(object sender, EventArgs e)
         {
             StartNewGame();
